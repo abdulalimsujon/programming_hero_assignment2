@@ -13,19 +13,19 @@ export type TOrders = {
 };
 
 export type TUser = {
-  userId: string;
+  userId: number;
   username: string;
   password: string;
   FullName: {
     firstName: string;
     lastName: string;
   };
-  age: string;
+  age: number;
   email: string;
   isActive: boolean;
   hobbies: string[];
   address: TAddress;
-  orders: TOrders;
+  orders: TOrders[];
 };
 
 export type userMethods = {

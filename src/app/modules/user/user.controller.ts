@@ -1,25 +1,27 @@
 import { Request, Response } from 'express';
 import { userServices } from './user.services';
+import userValidationSchema from './user.zod.validation';
+import { ZodError } from 'zod';
 
 const createUser = async (req: Request, res: Response) => {
   try {
     const user = req.body;
 
-    const result = await userServices.createUserIntoDb(user);
+    const value = userValidationSchema.parse(user);
+
+    const result = await userServices.createUserIntoDb(value);
 
     res.status(200).json({
       success: true,
       message: 'User created successfully!',
       data: result,
     });
-
-    // res.status(400).json({
-    //   success: false,
-    //   message: 'create user failed!',
-    //   data: null,
-    // });
   } catch (error) {
-    console.log(error);
+    if (error instanceof ZodError) {
+      res.status(400).json({ 'Validation failed:': error.errors });
+    } else {
+      throw error;
+    }
   }
 };
 const getAllUser = async (req: Request, res: Response) => {
@@ -31,12 +33,6 @@ const getAllUser = async (req: Request, res: Response) => {
       message: 'Users fetched successfully!',
       data: result,
     });
-
-    // res.status(400).json({
-    //   success: false,
-    //   message: 'fetch  user failed!',
-    //   data: null,
-    // });
   } catch (error) {
     console.log(error);
   }
@@ -49,17 +45,15 @@ const searchUser = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       message: 'Users fetched successfully!',
-      data: result,
+      data: result || null,
     });
-    // res.status(400).json({
-    //   success: false,
-    //   message: 'fetch  user failed!',
-    //   data: null,
-    // });
   } catch (error) {
     console.log(error);
   }
 };
+
+///---------------------delete--------------------------------->
+
 const deleteSingleUser = async (req: Request, res: Response) => {
   try {
     const id = req.params.userId;
@@ -70,12 +64,6 @@ const deleteSingleUser = async (req: Request, res: Response) => {
       message: 'User deleted successfully!',
       data: result,
     });
-
-    // res.status(400).json({
-    //   success: false,
-    //   message: 'fetch  user failed!',
-    //   data: null,
-    // });
   } catch (error) {
     console.log(error);
   }
@@ -94,27 +82,49 @@ const userOrderTotalPrice = async (req: Request, res: Response) => {
     data: userTotalOrderPrice,
   });
 };
-const allUserOrders = async (req: Request, res: Response) => {
+
+//---------------------------all user order------------------------->
+const UserOrders = async (req: Request, res: Response) => {
   const id = req.params.userId;
 
-  const result = await userServices.getAllUserOrders(id);
+  await userServices.UserOrders(id);
 
   res.status(200).json({
     success: true,
-    message: 'Order fetched successfully!',
-    data: result,
+    message: 'Order created successfully!',
+    data: null,
   });
 };
+
+//----------------------update user------------------------------------>
+
 const updateUser = async (req: Request, res: Response) => {
   const id = req.params.userId;
   const reqbody = req.body;
 
   const result = await userServices.updateUser(reqbody, id);
+  console.log(result);
 
   res.status(200).json({
     success: true,
     message: 'user updated successfully!',
     data: result,
+  });
+};
+
+//---------------------add order------------------------------>
+
+const addOrder = async (req: Request, res: Response) => {
+  const id = req.params.userId;
+
+  const reqbody = req.body;
+
+  await userServices.AddIntoOrder(reqbody, id);
+
+  res.status(200).json({
+    success: true,
+    message: 'order created  successfully!',
+    data: null,
   });
 };
 
@@ -124,6 +134,7 @@ export const userController = {
   searchUser,
   deleteSingleUser,
   userOrderTotalPrice,
-  allUserOrders,
+  UserOrders,
   updateUser,
+  addOrder,
 };

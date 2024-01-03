@@ -1,10 +1,27 @@
 import { Schema, model } from 'mongoose';
-import { TUser, UserModel, userMethods } from './user.interface';
+import {
+  TAddress,
+  TOrders,
+  TUser,
+  UserModel,
+  userMethods,
+} from './user.interface';
 import bcrypt from 'bcrypt';
+
+const orderSchema = new Schema<TOrders>({
+  productName: String,
+  price: Number,
+  quantity: Number,
+});
+const addressSchema = new Schema<TAddress>({
+  street: String,
+  city: String,
+  country: String,
+});
 
 const userSchema = new Schema<TUser, UserModel, userMethods>({
   userId: {
-    type: String,
+    type: Number,
     unique: true,
   },
   username: {
@@ -16,27 +33,19 @@ const userSchema = new Schema<TUser, UserModel, userMethods>({
     firstName: String,
     lastName: String,
   },
-  age: String,
+  age: Number,
   email: String,
   isActive: {
     type: Boolean,
     default: false,
   },
-  hobbies: [],
-  address: {
-    street: String,
-    city: String,
-    country: String,
-  },
-  orders: {
-    productName: String,
-    price: Number,
-    quantity: Number,
-  },
+  hobbies: { type: [String], default: [] },
+  address: addressSchema,
+  orders: { type: [orderSchema], default: [] },
 });
 
 userSchema.methods.isUserExist = async function (id: string) {
-  const existUser = await User.find({ userId: id });
+  const existUser = await User.findOne({ id });
 
   return existUser;
 };
@@ -50,4 +59,4 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-export const User = model<TUser>('User', userSchema);
+export const User = model<TUser, UserModel>('User', userSchema);
