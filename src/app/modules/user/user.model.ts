@@ -1,11 +1,5 @@
 import { Schema, model } from 'mongoose';
-import {
-  TAddress,
-  TOrders,
-  TUser,
-  UserModel,
-  userMethods,
-} from './user.interface';
+import { TAddress, TOrders, TUser, userModel } from './user.interface';
 import bcrypt from 'bcrypt';
 
 const orderSchema = new Schema<TOrders>({
@@ -19,7 +13,7 @@ const addressSchema = new Schema<TAddress>({
   country: String,
 });
 
-const userSchema = new Schema<TUser, UserModel, userMethods>({
+const userSchema = new Schema<TUser, userModel>({
   userId: {
     type: Number,
     unique: true,
@@ -44,10 +38,22 @@ const userSchema = new Schema<TUser, UserModel, userMethods>({
   orders: { type: [orderSchema], default: [] },
 });
 
-userSchema.methods.isUserExist = async function (id: string) {
-  const existUser = await User.findOne({ id });
+//creating a instance method
 
-  return existUser;
+// userSchema.methods.isUserExist = async function (id: number | null) {
+//   const existUser = await User.findOne({ userId: id });
+
+//   return existUser;
+// };
+
+//create a static mrthod
+
+userSchema.statics.isNotUserExist = async function (id: number) {
+  const existUser = await User.findOne({ userId: id });
+
+  if (!existUser) {
+    return true;
+  }
 };
 
 userSchema.pre('save', async function (next) {
@@ -59,4 +65,4 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-export const User = model<TUser, UserModel>('User', userSchema);
+export const User = model<TUser, userModel>('User', userSchema);

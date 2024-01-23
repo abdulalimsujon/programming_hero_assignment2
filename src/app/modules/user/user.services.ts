@@ -3,10 +3,6 @@ import { User } from './user.model';
 
 const createUserIntoDb = async (userData: TUser) => {
   const user = new User(userData);
-
-  if (await user.isUserExist(userData.userId)) {
-    throw new Error('user already exsits');
-  }
   user.save();
 
   const res = {
@@ -32,9 +28,14 @@ const DeleteSingleUser = async (id: string) => {
 
   return result;
 };
-const searchUser = async (id: string) => {
+const searchUser = async (id: number) => {
   const user = await User.findOne({ userId: id });
-  console.log('search', user);
+
+  const exist = await User.isNotUserExist(id);
+  if (exist) {
+    throw new Error('user is not exist');
+  }
+
   const result = {
     userId: user?.userId,
     username: user?.username,
@@ -56,7 +57,11 @@ const searchUser = async (id: string) => {
 
 ///------------------update user---------------------------->
 
-const updateUser = async (userData: TUser, id: string) => {
+const updateUser = async (userData: TUser, id: number) => {
+  const exist = await User.isNotUserExist(id);
+  if (exist) {
+    throw new Error('user is not exist');
+  }
   await User.updateOne(
     { userId: id },
 
@@ -80,12 +85,22 @@ const updateUser = async (userData: TUser, id: string) => {
 
 //-------------------get user order-------------------------------->
 
-const UserOrders = async (id: string) => {
+const UserOrders = async (id: number) => {
+  const exist = await User.isNotUserExist(id);
+  if (exist) {
+    throw new Error('user is not exist');
+  }
   const result = await User.find({ userId: id });
 
   return result;
 };
-const userOrderCalculation = async (id: string): Promise<number> => {
+
+//---------------userOrderCalculation----------------------------->
+const userOrderCalculation = async (id: number): Promise<number> => {
+  const exist = await User.isNotUserExist(id);
+  if (exist) {
+    throw new Error('user is not exist');
+  }
   const result = await User.find({ userId: id });
   let sum = 0;
 
@@ -104,6 +119,11 @@ const userOrderCalculation = async (id: string): Promise<number> => {
 
 const AddIntoOrder = async (orderData: TOrders, id: string) => {
   // const result1= await User.find({ userId: id });
+
+  const exist = await User.isNotUserExist(parseInt(id));
+  if (exist) {
+    throw new Error('user is not exist');
+  }
   const result = await User.updateOne(
     { userId: id },
     {
