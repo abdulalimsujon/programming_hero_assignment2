@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { userServices } from './user.services';
 import userValidationSchema from './user.zod.validation';
 import { ZodError } from 'zod';
-import { User } from './user.model';
 
 // ------------------create a user----------------------------->
 
@@ -115,7 +114,7 @@ const userOrderTotalPrice = async (req: Request, res: Response) => {
   try {
     const id = req.params.userId;
 
-    const result = await userServices.userOrderCalculation(id);
+    const result = await userServices.userOrderCalculation(parseInt(id));
     const userTotalOrderPrice = {
       totalPrice: result,
     };
